@@ -1,0 +1,6 @@
+exportPattern("^[[:alpha:]]+")
+export(PPCDT)
+import(MASS)
+import(stats)
+importFrom(stats,rnorm,pt,pf,runif)
+
