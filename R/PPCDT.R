@@ -21,11 +21,11 @@ PPCDT=function(X,Y,alpha,K){
   power1=power2=p1=p2=c(1:K)
   Rm=matrix(rep(0, nk*K),ncol=K)
   mr=matrix(rep(0,K*nk), ncol=nk)
-  for(i in 1:K )
+  for(k in 1:K )
   {
-    mr[i,]=sample(1:n,nk,replace = TRUE)
-    r=matrix(c(1:nk,mr[i,]),ncol = nk,byrow = TRUE)
-    Rm[,i]=r[2,]
+    mr[k,]=sample(1:n,nk,replace = TRUE)
+    r=matrix(c(1:nk,mr[k,]),ncol = nk,byrow = TRUE)
+    Rm[,k]=r[2,]
     R=matrix(rep(0,nk*n),ncol=n)
     R[t(r)]=1
     X1=R%*%X
@@ -39,24 +39,19 @@ PPCDT=function(X,Y,alpha,K){
     b=c(1:m)
     BeH0=Be-ginv(crossprod(X1))%*%t(A)%*%ginv(A%*%ginv(crossprod(X1))%*%t(A))%*%(A%*%Be-b)
     sig=sxH0=(t(Y1-X1%*%(BeH0))%*%(Y1-X1%*%(BeH0)))/(n-p)
-    power1=pt((mean(X1)-mu0)/(sd(X1)/sqrt(nk)),df=nk-1,lower.tail=TRUE)
-    power2=pf(((sig-sx)/(sdH0*m))/(sx/(sd*(nk-p))),df1=m,df2=nk-p)
+    power1[k]=pt((mean(X1)-mu0)/(sd(X1)/sqrt(nk)),df=nk-1,lower.tail=TRUE)
+    power2[k]=pf(((sig-sx)/(sdH0*m))/(sx/(sd*(nk-p))),df1=m,df2=nk-p)
     T=mean(X1)-mu0/(sd(X1)/sqrt(n))
-    p1=pt(T,df=nk-1)
+    p1[k]=pt(T,df=nk-1)
     F=((sig-sx)/(sdH0*m))/(sx/(sd*(nk-p)))
-    p2=pf(F,nk-1,nk-1,lower.tail=TRUE)
+    p2[k]=pf(F,nk-1,nk-1,lower.tail=TRUE)
   }
-  t_power=max(power1)
-  t_pvalue=min(p1)
-  t_power_opt=Rm[,which.max(t_power)]
-  t_pvalue_opt=Rm[,which.min(t_pvalue)]
+  power=max(power1,power2)
+  pvalue=min(p1,p2)
+  power_opt=Rm[,which.max(power)]
+  pvalue_opt=Rm[,which.min(pvalue)]
 
-  F_power=max(power2)
-  F_pvalue=min(p2)
-  F_power_opt=(Rm[,which.max(F_power)])
-  F_pvaluer_opt=(Rm[,which.min(F_pvalue)])
-
-  opt=intersect(t_power_opt,t_pvalue_opt)
+  opt=intersect(power_opt,pvalue_opt)
   Yopt=Y[opt]
   Xopt=X[opt,]
   Bopt=ginv(crossprod(Xopt))%*%t(Xopt)%*%Yopt
